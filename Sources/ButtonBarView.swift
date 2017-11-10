@@ -43,6 +43,11 @@ public enum SelectedBarVerticalAlignment {
     case bottom
 }
 
+public enum SelectedBarFittingStyle {
+    case cellWidth
+    case textWidth(inset: CGFloat)
+}
+
 open class ButtonBarView: UICollectionView {
 
     open lazy var selectedBar: UIView = { [unowned self] in
@@ -57,6 +62,7 @@ open class ButtonBarView: UICollectionView {
         }
     }
     var selectedBarVerticalAlignment: SelectedBarVerticalAlignment = .bottom
+    var selectedBarFittingStyle: SelectedBarFittingStyle = .cellWidth
     var selectedBarAlignment: SelectedBarAlignment = .center
     var selectedIndex = 0
 
@@ -78,29 +84,30 @@ open class ButtonBarView: UICollectionView {
     open func move(fromIndex: Int, toIndex: Int, progressPercentage: CGFloat, pagerScroll: PagerScroll) {
         selectedIndex = progressPercentage > 0.5 ? toIndex : fromIndex
 
-        let fromFrame = layoutAttributesForItem(at: IndexPath(item: fromIndex, section: 0))!.frame
+        let fromFrame = frameOfCell(at: fromIndex)
         let numberOfItems = dataSource!.collectionView(self, numberOfItemsInSection: 0)
 
         var toFrame: CGRect
 
         if toIndex < 0 || toIndex > numberOfItems - 1 {
             if toIndex < 0 {
-                let cellAtts = layoutAttributesForItem(at: IndexPath(item: 0, section: 0))
-                toFrame = cellAtts!.frame.offsetBy(dx: -cellAtts!.frame.size.width, dy: 0)
+                toFrame = frameOfCell(at: 0)
+                toFrame = toFrame.offsetBy(dx: -toFrame.size.width, dy: 0)
             } else {
-                let cellAtts = layoutAttributesForItem(at: IndexPath(item: (numberOfItems - 1), section: 0))
-                toFrame = cellAtts!.frame.offsetBy(dx: cellAtts!.frame.size.width, dy: 0)
+                toFrame = frameOfCell(at: numberOfItems - 1)
+                toFrame = toFrame.offsetBy(dx: toFrame.size.width, dy: 0)
             }
         } else {
-            toFrame = layoutAttributesForItem(at: IndexPath(item: toIndex, section: 0))!.frame
+            toFrame = frameOfCell(at: toIndex)
         }
 
         var targetFrame = fromFrame
         targetFrame.size.height = selectedBar.frame.size.height
         targetFrame.size.width += (toFrame.size.width - fromFrame.size.width) * progressPercentage
         targetFrame.origin.x += (toFrame.origin.x - fromFrame.origin.x) * progressPercentage
+        targetFrame.origin.y = selectedBar.frame.origin.y
 
-        selectedBar.frame = CGRect(x: targetFrame.origin.x, y: selectedBar.frame.origin.y, width: targetFrame.size.width, height: selectedBar.frame.size.height)
+        selectedBar.frame = targetFrame
 
         var targetContentOffset: CGFloat = 0.0
         if contentSize.width > frame.size.width {
@@ -114,16 +121,15 @@ open class ButtonBarView: UICollectionView {
     }
 
     open func updateSelectedBarPosition(_ animated: Bool, swipeDirection: SwipeDirection, pagerScroll: PagerScroll) {
-        var selectedBarFrame = selectedBar.frame
-
         let selectedCellIndexPath = IndexPath(item: selectedIndex, section: 0)
         let attributes = layoutAttributesForItem(at: selectedCellIndexPath)
         let selectedCellFrame = attributes!.frame
 
         updateContentOffset(animated: animated, pagerScroll: pagerScroll, toFrame: selectedCellFrame, toIndex: (selectedCellIndexPath as NSIndexPath).row)
 
-        selectedBarFrame.size.width = selectedCellFrame.size.width
-        selectedBarFrame.origin.x = selectedCellFrame.origin.x
+        var selectedBarFrame = frameOfCell(at: selectedIndex)
+        selectedBarFrame.size.height = selectedBar.frame.size.height
+        selectedBarFrame.origin.y = selectedBar.frame.origin.y
 
         if animated {
             UIView.animate(withDuration: 0.3, animations: { [weak self] in
@@ -135,6 +141,22 @@ open class ButtonBarView: UICollectionView {
     }
 
     // MARK: - Helpers
+
+    private func textFrameOfCell(at index: Int, withInset inset: CGFloat) -> CGRect {
+        let cell = cellForItem(at: IndexPath(item: index, section: 0)) as! ButtonBarViewCell
+        let textFrame = cell.convert(cell.label.frame, to: self)
+
+        return textFrame.insetBy(dx: -inset, dy: 0)
+    }
+
+    private func frameOfCell(at index: Int) -> CGRect {
+        switch selectedBarFittingStyle {
+        case .cellWidth:
+            return layoutAttributesForItem(at: IndexPath(item: index, section: 0))!.frame
+        case .textWidth(let inset):
+            return textFrameOfCell(at: index, withInset: inset)
+        }
+    }
 
     private func updateContentOffset(animated: Bool, pagerScroll: PagerScroll, toFrame: CGRect, toIndex: Int) {
         guard pagerScroll != .no || (pagerScroll != .scrollOnlyIfOutOfScreen && (toFrame.origin.x < contentOffset.x || toFrame.origin.x >= (contentOffset.x + frame.size.width - contentInset.left))) else { return }

@@ -65,6 +65,7 @@ public struct ButtonBarPagerTabStripSettings {
             }
         }
         public var buttonBarItemsShouldFillAvailableWidth = true
+        public var selectedBarFittingStyle: SelectedBarFittingStyle = .cellWidth
         // only used if button bar is created programaticaly and not using storyboards or nib files
         public var buttonBarHeight: CGFloat?
     }
@@ -157,6 +158,7 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
 
         buttonBarView.selectedBarHeight = settings.style.selectedBarHeight
         buttonBarView.selectedBarVerticalAlignment = settings.style.selectedBarVerticalAlignment
+        buttonBarView.selectedBarFittingStyle = settings.style.selectedBarFittingStyle
 
         // register button bar item cell
         switch buttonBarItemSpec! {
