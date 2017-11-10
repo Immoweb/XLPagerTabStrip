@@ -168,6 +168,11 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
             buttonBarView.register(ButtonBarViewCell.self, forCellWithReuseIdentifier:"Cell")
         }
         //-
+
+        if #available(iOS 10.0, *) {
+            buttonBarView.isAccessibilityElement = false
+            buttonBarView.accessibilityTraits = UIAccessibilityTraitTabBar
+        }
     }
 
     open override func viewWillAppear(_ animated: Bool) {
@@ -347,6 +352,16 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
                 changeCurrentIndex(currentIndex == indexPath.item ? nil : cell, currentIndex == indexPath.item ? cell : nil, false)
             }
         }
+
+        cell.isAccessibilityElement = true
+        cell.accessibilityLabel = cell.label.text
+        cell.accessibilityTraits |= UIAccessibilityTraitButton
+        cell.accessibilityTraits |= UIAccessibilityTraitHeader
+
+        if (currentIndex == indexPath.item) {
+            cell.accessibilityTraits |= UIAccessibilityTraitSelected
+        }
+
         return cell
     }
 
