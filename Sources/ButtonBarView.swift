@@ -143,7 +143,10 @@ open class ButtonBarView: UICollectionView {
     // MARK: - Helpers
 
     private func textFrameOfCell(at index: Int, withInset inset: CGFloat) -> CGRect {
-        let cell = cellForItem(at: IndexPath(item: index, section: 0)) as! ButtonBarViewCell
+		guard let cell = cellForItem(at: IndexPath(item: index, section: 0)) as? ButtonBarViewCell else {
+			return .zero
+		}
+
         let textFrame = cell.convert(cell.label.frame, to: self)
 
         return textFrame.insetBy(dx: -inset, dy: 0)
