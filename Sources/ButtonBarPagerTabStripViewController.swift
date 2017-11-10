@@ -131,12 +131,19 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
                 newContainerViewFrame.origin.y = buttonBarHeight
                 newContainerViewFrame.size.height = containerView.frame.size.height - (buttonBarHeight - containerView.frame.origin.y)
                 containerView.frame = newContainerViewFrame
+
                 return buttonBar
             }()
         buttonBarView = buttonBarViewAux
 
         if buttonBarView.superview == nil {
+            buttonBarView.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(buttonBarView)
+            let buttonBarHeight = settings.style.buttonBarHeight ?? 44
+            let topConstraint = view.constraintsAffectingLayout(for: .vertical)[0]
+            view.removeConstraint(topConstraint)
+            view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[tabs(height)][container]|", options: [], metrics: ["height": buttonBarHeight], views: ["tabs": buttonBarView, "container": containerView]))
+            view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[tabs]|", options: [], metrics: nil, views: ["tabs": buttonBarView]))
         }
         if buttonBarView.delegate == nil {
             buttonBarView.delegate = self
