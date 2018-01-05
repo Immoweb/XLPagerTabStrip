@@ -153,10 +153,29 @@ open class PagerTabStripViewController: UIViewController, UIScrollViewDelegate {
     }
 
     open func moveToViewController(at index: Int, animated: Bool = true) {
-        guard isViewLoaded && view.window != nil && currentIndex != index else {
-            preCurrentIndex = index
-            return
-        }
+		guard currentIndex != index else { return }
+
+		guard isViewLoaded, !viewControllers.isEmpty else {
+			currentIndex = index
+			return
+		}
+
+		guard view.window != nil else {
+			if animated {
+				preCurrentIndex = index
+			} else {
+				for index in currentIndex...index {
+					let viewController = viewControllers[index]
+					let width = viewController.view.bounds.width
+
+					containerView.setContentOffset(
+						CGPoint(x: containerView.contentOffset.x + width, y: 0),
+						animated: animated
+					)
+				}
+			}
+			return
+		}
 
         if animated && pagerBehaviour.skipIntermediateViewControllers && abs(currentIndex - index) > 1 {
             var tmpViewControllers = viewControllers
