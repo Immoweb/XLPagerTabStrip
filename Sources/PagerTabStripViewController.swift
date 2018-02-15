@@ -164,15 +164,19 @@ open class PagerTabStripViewController: UIViewController, UIScrollViewDelegate {
 			if animated {
 				preCurrentIndex = index
 			} else {
-				for index in currentIndex...index {
-					let viewController = viewControllers[index]
-					let width = viewController.view.bounds.width
+				var width = CGFloat(0)
 
-					containerView.setContentOffset(
-						CGPoint(x: containerView.contentOffset.x + width, y: 0),
-						animated: animated
-					)
+				for index in currentIndex..<index {
+					let viewController = viewControllers[index]
+					width += viewController.view.bounds.width
 				}
+
+				containerView.setContentOffset(
+					CGPoint(x: width, y: 0),
+					animated: false
+				)
+
+				currentIndex = index
 			}
 			return
 		}
