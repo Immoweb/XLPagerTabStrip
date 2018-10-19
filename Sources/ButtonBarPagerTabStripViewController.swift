@@ -317,6 +317,10 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
                 changeCurrentIndex(cells.first!, cells.last!, true)
             }
         }
+
+		cells.first!?.accessibilityTraits &= ~UIAccessibilityTraitSelected
+		cells.last!?.accessibilityTraits |= UIAccessibilityTraitSelected
+
         moveToViewController(at: indexPath.item)
     }
 
@@ -360,14 +364,17 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
             }
         }
 
-        cell.isAccessibilityElement = true
-        cell.accessibilityLabel = cell.label.text
-        cell.accessibilityTraits |= UIAccessibilityTraitButton
-        cell.accessibilityTraits |= UIAccessibilityTraitHeader
+		cell.isAccessibilityElement = true
+		cell.accessibilityLabel = "\(cell.label.text ?? ""), "
+			+ "\(NSLocalizedString("tab", comment: "")), "
+			+ "\(indexPath.row + 1) \(NSLocalizedString("of", comment: "")) "
+			+ "\(collectionView.numberOfItems(inSection: indexPath.section))"
 
-        if (currentIndex == indexPath.item) {
-            cell.accessibilityTraits |= UIAccessibilityTraitSelected
-        }
+		if (currentIndex == indexPath.item) {
+			cell.accessibilityTraits |= UIAccessibilityTraitSelected
+		} else {
+			cell.accessibilityTraits &= ~UIAccessibilityTraitSelected
+		}
 
         return cell
     }

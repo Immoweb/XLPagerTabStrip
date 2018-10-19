@@ -181,7 +181,7 @@ open class PagerTabStripViewController: UIViewController, UIScrollViewDelegate {
 			return
 		}
 
-        if animated && pagerBehaviour.skipIntermediateViewControllers && abs(currentIndex - index) > 1 {
+        if !UIAccessibility.isVoiceOverRunning && animated && pagerBehaviour.skipIntermediateViewControllers && abs(currentIndex - index) > 1 {
             var tmpViewControllers = viewControllers
             let currentChildVC = viewControllers[currentIndex]
             let fromIndex = currentIndex < index ? index - 1 : index + 1
@@ -193,6 +193,7 @@ open class PagerTabStripViewController: UIViewController, UIScrollViewDelegate {
             (navigationController?.view ?? view).isUserInteractionEnabled = !animated
             containerView.setContentOffset(CGPoint(x: pageOffsetForChild(at: index), y: 0), animated: true)
         } else {
+			let animated = UIAccessibility.isVoiceOverRunning ? false : animated
             (navigationController?.view ?? view).isUserInteractionEnabled = !animated
             containerView.setContentOffset(CGPoint(x: pageOffsetForChild(at: index), y: 0), animated: animated)
         }
