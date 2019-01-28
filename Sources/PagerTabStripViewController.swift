@@ -299,6 +299,10 @@ open class PagerTabStripViewController: UIViewController, UIScrollViewDelegate {
         preCurrentIndex = currentIndex
         let changeCurrentIndex = newCurrentIndex != oldCurrentIndex
 
+		if changeCurrentIndex {
+			UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, viewControllers[currentIndex].view)
+		}
+
         if let progressiveDelegate = self as? PagerTabStripIsProgressiveDelegate, pagerBehaviour.isProgressiveIndicator {
 
             let (fromIndex, toIndex, scrollPercentage) = progressiveIndicatorData(virtualPage)
