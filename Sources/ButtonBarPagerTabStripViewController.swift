@@ -56,7 +56,9 @@ public struct ButtonBarPagerTabStripSettings {
         public var buttonBarItemFont = UIFont.systemFont(ofSize: 18)
         public var buttonBarItemLeftRightMargin: CGFloat = 8
         public var buttonBarItemTitleColor: UIColor?
-        @available(*, deprecated: 7.0.0) public var buttonBarItemsShouldFillAvailiableWidth: Bool {
+
+		@available(*, deprecated)
+		public var buttonBarItemsShouldFillAvailiableWidth: Bool {
             set {
                 buttonBarItemsShouldFillAvailableWidth = newValue
             }
@@ -64,6 +66,7 @@ public struct ButtonBarPagerTabStripSettings {
                 return buttonBarItemsShouldFillAvailableWidth
             }
         }
+
         public var buttonBarItemsShouldFillAvailableWidth = true
         public var selectedBarFittingStyle: SelectedBarFittingStyle = .cellWidth
         // only used if button bar is created programaticaly and not using storyboards or nib files
@@ -142,8 +145,8 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
             let buttonBarHeight = settings.style.buttonBarHeight ?? 44
             let topConstraint = view.constraintsAffectingLayout(for: .vertical)[0]
             view.removeConstraint(topConstraint)
-            view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[tabs(height)][container]|", options: [], metrics: ["height": buttonBarHeight], views: ["tabs": buttonBarView, "container": containerView]))
-            view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[tabs]|", options: [], metrics: nil, views: ["tabs": buttonBarView]))
+            view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[tabs(height)][container]|", options: [], metrics: ["height": buttonBarHeight], views: ["tabs": buttonBarView!, "container": containerView!]))
+            view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[tabs]|", options: [], metrics: nil, views: ["tabs": buttonBarView!]))
         }
         if buttonBarView.delegate == nil {
             buttonBarView.delegate = self
@@ -178,7 +181,7 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
 
         if #available(iOS 10.0, *) {
             buttonBarView.isAccessibilityElement = false
-            buttonBarView.accessibilityTraits = UIAccessibilityTraitTabBar
+            buttonBarView.accessibilityTraits = UIAccessibilityTraits.tabBar
         }
     }
 
@@ -272,11 +275,11 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
 
         if reload {
             let indexPathsToReload = cells.enumerated()
-                .flatMap { (arg) -> IndexPath? in
+                .compactMap { (arg) -> IndexPath? in
                     let (index, cell) = arg
                     return cell == nil ? indexPaths[index] : nil
                 }
-                .flatMap { (indexPath: IndexPath) -> IndexPath? in
+                .compactMap { (indexPath: IndexPath) -> IndexPath? in
                     return (indexPath.item >= 0 && indexPath.item < buttonBarView.numberOfItems(inSection: indexPath.section)) ? indexPath : nil
                 }
 
@@ -318,8 +321,8 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
             }
         }
 
-		cells.first!?.accessibilityTraits &= ~UIAccessibilityTraitSelected
-		cells.last!?.accessibilityTraits |= UIAccessibilityTraitSelected
+		cells.first!?.accessibilityTraits.remove(.selected)
+		cells.last!?.accessibilityTraits.insert(.selected)
 
         moveToViewController(at: indexPath.item)
     }
@@ -371,9 +374,9 @@ open class ButtonBarPagerTabStripViewController: PagerTabStripViewController, Pa
 			+ "\(collectionView.numberOfItems(inSection: indexPath.section))"
 
 		if (currentIndex == indexPath.item) {
-			cell.accessibilityTraits |= UIAccessibilityTraitSelected
+			cell.accessibilityTraits.insert(.selected)
 		} else {
-			cell.accessibilityTraits &= ~UIAccessibilityTraitSelected
+			cell.accessibilityTraits.remove(.selected)
 		}
 
         return cell
